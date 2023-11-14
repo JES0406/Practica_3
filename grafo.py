@@ -59,7 +59,7 @@ class Grafo:
         Returns: True si el grafo es dirigido, False si no.
         Raises: None
         """
-        pass
+        return self.dirigido
     
     def agregar_vertice(self,v:object)->None:
         """ Agrega el vértice v al grafo.
@@ -70,11 +70,11 @@ class Grafo:
         Raises:
             TypeError: Si el objeto no es "hashable".
         """
-        pass
+        self.adyacencia[v]={}
 
     def agregar_arista(self,s:object,t:object,data:object=None,weight:float=1)->None:
         """ Si los objetos s y t son vértices del grafo, agrega
-        una orista al grafo que va desde el vértice s hasta el vértice t
+        una arista al grafo que va desde el vértice s hasta el vértice t
         y le asocia los datos "data" y el peso weight.
         En caso contrario, no hace nada.
         
@@ -87,7 +87,10 @@ class Grafo:
         Raises:
             TypeError: Si s o t no son "hashable".
         """
-        pass
+        if s in self.adyacencia and t in self.adyacencia:
+            self.adyacencia[s][t]=(data,weight)
+            if not self.dirigido:
+                self.adyacencia[t][s]=(data,weight)
     
     def eliminar_vertice(self,v:object)->None:
         """ Si el objeto v es un vértice del grafo lo elimiina.
@@ -99,7 +102,11 @@ class Grafo:
         Raises:
             TypeError: Si v no es "hashable".
         """
-        pass
+        if v in self.adyacencia:
+            del self.adyacencia[v]
+            for u in self.adyacencia:
+                if v in self.adyacencia[u]:
+                    del self.adyacencia[u][v]
 
     def eliminar_arista(self,s:object,t:object)->None:
         """ Si los objetos s y t son vértices del grafo y existe
@@ -113,7 +120,10 @@ class Grafo:
         Raises:
             TypeError: Si s o t no son "hashable".
         """
-        pass
+        if s in self.adyacencia and t in self.adyacencia[s]:
+            del self.adyacencia[s][t]
+            if not self.dirigido:
+                del self.adyacencia[t][s]
     
     def obtener_arista(self,s:object,t:object)->Tuple[object,float] or None:
         """ Si los objetos s y t son vértices del grafo y existe
@@ -130,7 +140,10 @@ class Grafo:
         Raises:
             TypeError: Si s o t no son "hashable".
         """
-        pass
+        if s in self.adyacencia and t in self.adyacencia[s]:
+            return self.adyacencia[s][t]
+        else:
+            return None
 
     def lista_vertices(self)->List[object]:
         """ Devuelve una lista con los vértices del grafo.
@@ -140,7 +153,7 @@ class Grafo:
             List[object]: Una lista [v1,v2,...,vn] de los vértices del grafo.
         Raises: None
         """
-        pass
+        return list(self.adyacencia.keys())
 
     def lista_adyacencia(self,u:object)->List[object] or None:
         """ Si el objeto u es un vértice del grafo, devuelve
@@ -156,7 +169,8 @@ class Grafo:
         Raises:
             TypeError: Si u no es "hashable".
         """
-        pass
+        if u in self.adyacencia:
+            return list(self.adyacencia[u].keys())
 
 
     #### Grados de vértices ####
@@ -173,7 +187,8 @@ class Grafo:
         Raises:
             TypeError: Si u no es "hashable".
         """
-        pass
+        if v in self.adyacencia:
+            return len(self.adyacencia[v])
 
     def grado_entrante(self,v:object)->int or None:
         """ Si el objeto v es un vértice del grafo, devuelve
@@ -188,7 +203,11 @@ class Grafo:
         Raises:
             TypeError: Si v no es "hashable".
         """
-        pass
+        if v in self.adyacencia:
+            if self.dirigido:
+                return sum([1 for u in self.adyacencia if v in self.adyacencia[u]])
+            else:
+                return len(self.adyacencia[v])
 
     def grado(self,v:object)->int or None:
         """ Si el objeto v es un vértice del grafo, devuelve
@@ -205,7 +224,11 @@ class Grafo:
         Raises:
             TypeError: Si v no es "hashable".
         """
-        pass
+        if v in self.adyacencia:
+            if self.dirigido:
+                return self.grado_saliente(v)
+            else:
+                return len(self.adyacencia[v])
 
 
     #### Algoritmos ####
