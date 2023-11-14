@@ -4,10 +4,10 @@ callejero.py
 Matemática Discreta - IMAT
 ICAI, Universidad Pontificia Comillas
 
-Grupo: GPxxx
+Grupo: GP02A
 Integrantes:
-    - XX
-    - XX
+    - JAVIER ESCOBAR SERRANO
+    - ENRIQUE FERNÁNDEZ-BAILLO RODRIÍGUEZ DE TEMBLEQUE
 
 Descripción:
 Librería con herramientas y clases auxiliares necesarias para la representación de un callejero en un grafo.
@@ -19,6 +19,10 @@ Complétese esta descripción según las funcionalidades agregadas por el grupo.
 VELOCIDADES_CALLES={"AUTOVIA":100,"AVENIDA":90,"CARRETERA":70,"CALLEJON":30,"CAMINO":30,"ESTACION DE METRO":20,"PASADIZO":20,"PLAZUELA":20,"COLONIA":20}
 VELOCIDAD_CALLES_ESTANDAR=50
 
+import pandas as pd
+from dgt import process_data
+df_cruces, df_direcc = process_data("data/cruces.csv", "data/direcciones.csv")
+
 
 class Cruce:
 
@@ -27,8 +31,7 @@ class Cruce:
     def __init__(self,coord_x,coord_y):
         self.coord_x=coord_x
         self.coord_y=coord_y
-        self.calles_entrantes=[]
-        self.calles_salientes=[]
+        self.calles = self.get_calles(df_cruces)
         #Completar la inicialización de las estructuras de datos agregadas
 
    
@@ -47,9 +50,27 @@ class Cruce:
     
     def __hash__(self) -> int:
         return hash((self.coord_x,self.coord_y))
+
+    def get_calles(self, cruces: pd.DataFrame):
+        return cruces.loc[(cruces["Coordenada X"]==self.coord_x) & (cruces["Coordenada Y"]==self.coord_y)]["Codigo de via"].values
     
 
 
 class Calle:
     #Completar esta clase con los datos que sea necesario almacenar de cada calle para poder reconstruir los datos del 
-    pass
+    def __init__(self, ID):
+        self.ID = ID
+        self.direcciones = pd.DataFrame()
+        self.cruces = pd.DataFrame()
+
+    def get_data(self, cruces: pd.DataFrame, direcciones: pd.Dataframe):
+        self.direcciones = direcciones.loc[direcciones["Codigo de via"]==self.ID]
+        self.cruces = cruces.loc[cruces["Codigo de via"]==self.ID]
+
+    def get_velocidad(self):
+        if self.direcciones.empty or self.direcciones["Clase de la via"].iloc[0] not in VELOCIDADES_CALLES:
+            return VELOCIDAD_CALLES_ESTANDAR
+        else:
+            return VELOCIDADES_CALLES[self.direcciones["Clase de la via"].iloc[0]]
+
+

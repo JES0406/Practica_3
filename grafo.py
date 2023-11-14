@@ -4,10 +4,10 @@ grafo.py
 Matemática Discreta - IMAT
 ICAI, Universidad Pontificia Comillas
 
-Grupo: GPxxx
+Grupo: GP02A
 Integrantes:
-    - XX
-    - XX
+    - JAVIER ESCOBAR SERRANO
+    - ENRIQUE FERNÁNDEZ-BAILLO RODRIÍGUEZ DE TEMBLEQUE
 
 Descripción:
 Librería para la creación y análisis de grafos dirigidos y no dirigidos.
