@@ -27,6 +27,8 @@ class Cruce:
     def __init__(self,coord_x,coord_y):
         self.coord_x=coord_x
         self.coord_y=coord_y
+        self.calles_entrantes=[]
+        self.calles_salientes=[]
         #Completar la inicialización de las estructuras de datos agregadas
 
    
