@@ -320,4 +320,18 @@ class Grafo:
             En ambos casos, los vértices y las aristas son los contenidos en el grafo dado.
         Raises: None
         """
-        pass
+        if self.dirigido:
+            G=nx.DiGraph()
+        else:
+            G=nx.Graph()
+        G.add_nodes_from(self.lista_vertices())
+        if self.dirigido:
+            for u in self.adyacencia.keys():
+                for v in self.adyacencia[u].keys():
+                    G.add_edge(u,v)
+        else:
+            for i in range(len(self.adyacencia.keys())):
+                for j in range(i+1,len(self.adyacencia.keys())):
+                    if j in self.adyacencia[i]:
+                        G.add_edge(i,j)
+        return G
