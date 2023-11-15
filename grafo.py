@@ -189,6 +189,8 @@ class Grafo:
         """
         if v in self.adyacencia:
             return len(self.adyacencia[v])
+        else:
+            return 0
 
     def grado_entrante(self,v:object)->int or None:
         """ Si el objeto v es un vértice del grafo, devuelve
@@ -208,6 +210,8 @@ class Grafo:
                 return sum([1 for u in self.adyacencia if v in self.adyacencia[u]])
             else:
                 return len(self.adyacencia[v])
+        else:
+            return 0
 
     def grado(self,v:object)->int or None:
         """ Si el objeto v es un vértice del grafo, devuelve
@@ -229,7 +233,8 @@ class Grafo:
                 return self.grado_saliente(v)
             else:
                 return len(self.adyacencia[v])
-
+        else:
+            return 0
 
     #### Algoritmos ####
     def dijkstra(self,origen:object)-> Dict[object,object]:
