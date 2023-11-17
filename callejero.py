@@ -21,6 +21,7 @@ VELOCIDAD_CALLES_ESTANDAR=50
 
 import pandas as pd
 from dgt import process_data
+from grafo import Grafo
 df_cruces, df_direcc = process_data("data/cruces.csv", "data/direcciones.csv")
 
 
@@ -32,8 +33,6 @@ class Cruce:
         self.coord_x=coord_x
         self.coord_y=coord_y
         self.calles = self.get_calles(df_cruces)
-        #Completar la inicialización de las estructuras de datos agregadas
-
    
     
     """Se hace que la clase Cruce sea "hashable" mediante la implementación de los métodos
@@ -52,7 +51,7 @@ class Cruce:
         return hash((self.coord_x,self.coord_y))
 
     def get_calles(self, cruces: pd.DataFrame):
-        return cruces.loc[(cruces["Coordenada X"]==self.coord_x) & (cruces["Coordenada Y"]==self.coord_y)]["Codigo de via"].values
+        return cruces[(cruces["Coordenada X (Guia Urbana) cm (cruce)"] == self.coord_x) & (cruces["Coordenada Y (Guia Urbana) cm (cruce)"] == self.coord_y)]["Codigo de vía tratado"].unique()
     
 
 
@@ -63,7 +62,7 @@ class Calle:
         self.direcciones = pd.DataFrame()
         self.cruces = pd.DataFrame()
 
-    def get_data(self, cruces: pd.DataFrame, direcciones: pd.Dataframe):
+    def get_data(self, cruces: pd.DataFrame, direcciones: pd.DataFrame):
         self.direcciones = direcciones.loc[direcciones["Codigo de via"]==self.ID]
         self.cruces = cruces.loc[cruces["Codigo de via"]==self.ID]
 
@@ -73,4 +72,20 @@ class Calle:
         else:
             return VELOCIDADES_CALLES[self.direcciones["Clase de la via"].iloc[0]]
 
+def filtrar_por_radios(R: int):
+    df_cruces["coordenadas"] = list(zip(df_cruces["Coordenada X (Guia Urbana) cm (cruce)"], df_cruces["Coordenada Y (Guia Urbana) cm (cruce)"]))
+    coordenadas_a_tratar = df_cruces["coordenadas"].sort_values().unique()
+    coordenadas_limpias = []
+    for coordenada in coordenadas_a_tratar:
+        coor_x = coordenada[0]
+        coor_y = coordenada[1]
+        if not any((coor_x - R <= x <= coor_x + R) and (coor_y - R <= y <= coor_y + R) for x, y in coordenadas_limpias):
+            coordenadas_limpias.append(coordenada)
+    return coordenadas_limpias
 
+if __name__ == "__main__":
+    coordenadas_limpias = filtrar_por_radios(8000)
+    grafo = Grafo(False)
+    print(len(coordenadas_limpias))
+    for coordenada in coordenadas_limpias:
+        grafo.agregar_vertice(Cruce(coordenada[0], coordenada[1]))
