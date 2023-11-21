@@ -70,7 +70,8 @@ class Grafo:
         Raises:
             TypeError: Si el objeto no es "hashable".
         """
-        self.adyacencia[v]={}
+        if v not in self.adyacencia:
+            self.adyacencia[v]={}
 
     def agregar_arista(self,s:object,t:object,data:object=None,weight:float=1)->None:
         """ Si los objetos s y t son vértices del grafo, agrega
@@ -324,14 +325,15 @@ class Grafo:
             G=nx.DiGraph()
         else:
             G=nx.Graph()
-        G.add_nodes_from(self.lista_vertices())
+        nodos = self.lista_vertices()
+        G.add_nodes_from(nodos)
         if self.dirigido:
             for u in self.adyacencia.keys():
                 for v in self.adyacencia[u].keys():
                     G.add_edge(u,v)
         else:
-            for i in range(len(self.adyacencia.keys())):
-                for j in range(i+1,len(self.adyacencia.keys())):
-                    if j in self.adyacencia[i]:
-                        G.add_edge(i,j)
+            for u in self.adyacencia.keys():
+                for v in self.adyacencia[u].keys():
+                    if (u,v) not in G.edges():
+                        G.add_edge(u,v)
         return G
