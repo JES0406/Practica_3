@@ -22,6 +22,7 @@ VELOCIDAD_CALLES_ESTANDAR=50
 import pandas as pd
 from dgt import process_data
 from grafo import Grafo
+from math import sqrt
 df_cruces, df_direcc = process_data("data/cruces.csv", "data/direcciones.csv")
 
 
@@ -54,9 +55,8 @@ class Cruce:
         return cruces[cruces["coordenadas"] == (self.coord_x, self.coord_y)]["Codigo de vía tratado"].unique()
     
 
-
 class Calle:
-    #Completar esta clase con los datos que sea necesario almacenar de cada calle para poder reconstruir los datos del 
+    #Completar esta clase con los datos que sea necesario almacenar de cada calle para poder reconstruir los datos del callejero
     def __init__(self, ID):
         self.ID = ID
         self.direcciones = self.get_data(df_cruces, df_direcc)[1]
@@ -86,7 +86,7 @@ def filtrar_por_radios(R: int):
     return coordenadas_limpias
 
 def dist(coordenada1, coordenada2):
-    return ((coordenada1[0] - coordenada2[0])**2 + (coordenada1[1] - coordenada2[1])**2)**(1/2)
+    return sqrt((coordenada1[0] - coordenada2[0])**2 + (coordenada1[1] - coordenada2[1])**2)
 
 def closest(coordenada, coordenadas_limpias, R):
     coor_x = coordenada[0]
