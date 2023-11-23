@@ -321,17 +321,17 @@ class Grafo:
             En ambos casos, los vértices y las aristas son los contenidos en el grafo dado.
         Raises: None
         """
-        if self.dirigido:
-            G=nx.DiGraph()
-        else:
-            G=nx.Graph()
         nodos = self.lista_vertices()
-        G.add_nodes_from(nodos)
+        
         if self.dirigido:
+            G = nx.DiGraph()
+            G.add_nodes_from(nodos)
             for u in self.adyacencia.keys():
                 for v in self.adyacencia[u].keys():
                     G.add_edge(u,v)
         else:
+            G = nx.Graph()
+            G.add_nodes_from(nodos)
             for u in self.adyacencia.keys():
                 for v in self.adyacencia[u].keys():
                     if (u,v) not in G.edges():
