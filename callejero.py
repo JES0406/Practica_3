@@ -34,7 +34,6 @@ class Cruce:
         self.coord_x=coord_x
         self.coord_y=coord_y
         self.calles = self.get_calles(df_cruces)
-   
     
     """Se hace que la clase Cruce sea "hashable" mediante la implementación de los métodos
     __eq__ y __hash__, haciendo que dos objetos de tipo Cruce se consideren iguales cuando
@@ -89,46 +88,50 @@ def dist(coordenada1, coordenada2):
     return sqrt((coordenada1[0] - coordenada2[0])**2 + (coordenada1[1] - coordenada2[1])**2)
 
 def closest(coordenada, coordenadas_limpias, R):
-    coor_x = coordenada[0]
-    coor_y = coordenada[1]
+    coor_x, coor_y = coordenada[0], coordenada[1]
     for x, y in coordenadas_limpias:
-        if coor_x - R <= x <= coor_x + R and coor_y - R <= y <= coor_y + R:
+        if (coor_x - R <= x <= coor_x + R) and (coor_y - R <= y <= coor_y + R):
             return (x, y)
 
 if __name__ == "__main__":
     from time import time
     coordenadas_limpias = filtrar_por_radios(8000) # 8000 centímetros = 80 metros, se considera que un cruce está dentro del radio de otro si está a menos de 80 metros de distancia según las observaciones
     print(len(coordenadas_limpias))
-    # print(df_cruces["coordenadas"].head())
+    print(df_cruces["coordenadas"].head())
 
     # Creamos los cruces
-    # cruces = [Cruce(coordenada[0], coordenada[1]) for coordenada in coordenadas_limpias]
+    cruces = [Cruce(coordenada[0], coordenada[1]) for coordenada in coordenadas_limpias]
 
-    # # Creamos las calles
-    # calles = []
-    # for cruce in cruces: # Escogemos los cruces
-    #     for calle in cruce.calles: # Escogemos las calles de cada cruce
-    #         if calle not in calles: # Si la calle no está en la lista de calles, la añadimos
-    #             calles.append(calle)  
-    # calles = [Calle(calle) for calle in calles] # Creamos los objetos calle
+    # Creamos las calles
+    calles = []
+    for cruce in cruces: # Escogemos los cruces
+        for calle in cruce.calles: # Escogemos las calles de cada cruce
+            if calle not in calles: # Si la calle no está en la lista de calles, la añadimos
+                calles.append(calle)  
+    calles = [Calle(calle) for calle in calles] # Creamos los objetos calle
 
-    # # Creamos el grafo  
-    # grafo = Grafo(False)
+    # Creamos el grafo  
+    grafo = Grafo(False)
 
-    # # Añadir vértices al grafo
-    # for cruce in cruces:
-    #     grafo.agregar_vertice(cruce)
+    # Añadir vértices al grafo
+    for cruce in cruces:
+        grafo.agregar_vertice(cruce)
     
-    # # Para las aristas, se añaden las calles que conectan dos cruces como aristas del grafo
-    # for calle in calles:
-    #     cruces_calle = calle.cruces
-    #     for i in range(len(cruces_calle)):
-    #         for j in range(i+1, len(cruces_calle)):
-    #             grafo.agregar_arista(cruces_calle[i], cruces_calle[j])
+    # Para las aristas, se añaden las calles que conectan dos cruces como aristas del grafo
+    for calle in calles:
+        cruces_calle = calle.cruces
+        for i in range(len(cruces_calle)):
+            for j in range(i+1, len(cruces_calle)):
+                grafo.agregar_arista(cruces_calle[i], cruces_calle[j])
 
-    # # Pasemoslo a networkx
-    # import networkx as nx
-    # import matplotlib.pyplot as plt
-    # G = grafo.convertir_a_NetworkX()
-    # nx.draw(G, with_labels=True)
-    # plt.show()
+    # Pasemoslo a networkx
+    import networkx as nx
+    import matplotlib.pyplot as plt
+    G = grafo.convertir_a_NetworkX()
+
+    pos = {}
+    for cruce in cruces:
+        pos[cruce] = (cruce.coord_x, cruce.coord_y)
+
+    nx.draw_networkx_nodes(G, pos=pos, node_size=16)
+    plt.show()
