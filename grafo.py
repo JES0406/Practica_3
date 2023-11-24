@@ -88,7 +88,7 @@ class Grafo:
         Raises:
             TypeError: Si s o t no son "hashable".
         """
-        if s in self.adyacencia and t in self.adyacencia:
+        if (s in self.adyacencia) and (t in self.adyacencia):
             self.adyacencia[s][t]=(data,weight)
             if not self.dirigido:
                 self.adyacencia[t][s]=(data,weight)

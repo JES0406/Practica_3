@@ -95,16 +95,19 @@ def closest(coordenada, coordenadas_limpias, R):
 
 if __name__ == "__main__":
     from time import time
-    coordenadas_limpias = filtrar_por_radios(8000) # 8000 centímetros = 80 metros, se considera que un cruce está dentro del radio de otro si está a menos de 80 metros de distancia según las observaciones
+    coordenadas_limpias = filtrar_por_radios(1500) # 8000 centímetros = 80 metros, se considera que un cruce está dentro del radio de otro si está a menos de 80 metros de distancia según las observaciones
     print(len(coordenadas_limpias))
     print(df_cruces["coordenadas"].head())
 
     # Creamos los cruces
-    cruces = [Cruce(coordenada[0], coordenada[1]) for coordenada in coordenadas_limpias]
+    cruces = {}
+    for coordenada in coordenadas_limpias:
+        cruces[coordenada] = Cruce(coordenada[0], coordenada[1])
+    list_cruces:list[Cruce] = list(cruces.values())
 
     # Creamos las calles
     calles = []
-    for cruce in cruces: # Escogemos los cruces
+    for cruce in list_cruces: # Escogemos los cruces
         for calle in cruce.calles: # Escogemos las calles de cada cruce
             if calle not in calles: # Si la calle no está en la lista de calles, la añadimos
                 calles.append(calle)  
@@ -114,15 +117,15 @@ if __name__ == "__main__":
     grafo = Grafo(False)
 
     # Añadir vértices al grafo
-    for cruce in cruces:
+    for cruce in list_cruces:
         grafo.agregar_vertice(cruce)
     
     # Para las aristas, se añaden las calles que conectan dos cruces como aristas del grafo
     for calle in calles:
         cruces_calle = calle.cruces
         for i in range(len(cruces_calle)):
-            for j in range(i+1, len(cruces_calle)):
-                grafo.agregar_arista(cruces_calle[i], cruces_calle[j])
+            if i != len(cruces_calle) - 1:
+                grafo.agregar_arista(cruces[cruces_calle[i]], cruces[cruces_calle[i+1]], None, calle.get_velocidad())
 
     # Pasemoslo a networkx
     import networkx as nx
@@ -130,8 +133,9 @@ if __name__ == "__main__":
     G = grafo.convertir_a_NetworkX()
 
     pos = {}
-    for cruce in cruces:
+    for cruce in list_cruces:
         pos[cruce] = (cruce.coord_x, cruce.coord_y)
 
-    nx.draw_networkx_nodes(G, pos=pos, node_size=16)
+    nx.draw_networkx_nodes(G, pos=pos, node_size=1)
+    nx.draw_networkx_edges(G, pos=pos, width=0.5, edge_color="black")
     plt.show()
