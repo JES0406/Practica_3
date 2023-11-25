@@ -23,6 +23,7 @@ import pandas as pd
 from dgt import process_data
 from grafo import Grafo
 from math import sqrt
+import numpy as np
 df_cruces, df_direcc = process_data("data/cruces.csv", "data/direcciones.csv")
 
 
@@ -69,6 +70,29 @@ class Calle:
             return VELOCIDAD_CALLES_ESTANDAR
         else:
             return VELOCIDADES_CALLES[self.direcciones["Clase de la via"].iloc[0]]
+        
+    def funcion_aux(self, x, distancias, cruce):
+        distancias[dist(x["coordenadas"], cruce)] = x["Número"]
+
+    def ordenar_cruces(self):
+        cruces_ordenados = {}
+
+        for cruce in self.cruces:
+            try:
+                distancias = {}
+                self.direcciones.apply(lambda x: self.funcion_aux(x, distancias, cruce), axis=1)
+                distancias = dict(sorted(distancias.items()))
+                distancia_min = list(distancias.keys())[0]
+                num_dist_min = distancias[distancia_min]
+                while num_dist_min in cruces_ordenados:
+                    num_dist_min += 0.0001
+                cruces_ordenados[num_dist_min] = cruce
+            except:
+                continue
+        
+        cruces_ordenados = dict(sorted(cruces_ordenados.items()))
+        cruces_ordenados = list(cruces_ordenados.values())
+        self.cruces = cruces_ordenados
 
 def filtrar_por_radios(R: int):
     df_cruces["coordenadas"] = list(zip(df_cruces["Coordenada X (Guia Urbana) cm (cruce)"], df_cruces["Coordenada Y (Guia Urbana) cm (cruce)"]))
