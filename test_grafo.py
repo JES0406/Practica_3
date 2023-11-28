@@ -46,16 +46,16 @@ for v in vertices:
     print(v,":" , G.grado(v),G.grado_entrante(v),G.grado_saliente(v),G.lista_adyacencia(v))
 
 #Dijkstra y camino mínimo
-# acm=G.dijkstra(1)
-# print(acm)
+acm=G.dijkstra(1)
+print(acm)
 
-# camino=G.camino_minimo(1,5)
-# print(camino)
+camino=G.camino_minimo(1,5)
+print(camino)
 
-# if(not dirigido):
-#     #Árbol abarcador mínimo
-#     aam=G.kruskal()
-#     print(aam)
+if(not dirigido):
+    #Árbol abarcador mínimo
+    aam=G.kruskal()
+    print(aam)
 
-#     aam2=G.prim()
-#     print(aam2)
+    aam2=G.prim()
+    print(aam2)

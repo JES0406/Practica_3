@@ -173,7 +173,6 @@ class Grafo:
         if u in self.adyacencia:
             return list(self.adyacencia[u].keys())
 
-
     #### Grados de vértices ####
     def grado_saliente(self,v:object)-> int or None:
         """ Si el objeto v es un vértice del grafo, devuelve
@@ -191,7 +190,7 @@ class Grafo:
         if v in self.adyacencia:
             return len(self.adyacencia[v])
         else:
-            return 0
+            return None
 
     def grado_entrante(self,v:object)->int or None:
         """ Si el objeto v es un vértice del grafo, devuelve
@@ -208,11 +207,15 @@ class Grafo:
         """
         if v in self.adyacencia:
             if self.dirigido:
-                return sum([1 for u in self.adyacencia if v in self.adyacencia[u]])
+                grado = 0
+                for u in self.adyacencia:
+                    if v in self.adyacencia[u]:
+                        grado += 1
+                return grado
             else:
                 return len(self.adyacencia[v])
         else:
-            return 0
+            return None
 
     def grado(self,v:object)->int or None:
         """ Si el objeto v es un vértice del grafo, devuelve
@@ -371,8 +374,29 @@ class Grafo:
             En el ejemplo anterior en que G.kruskal()={2:1, 3:2, 4:1} podríamos tener, por ejemplo,
             G.prim=[(1,2),(1,4),(3,2)]
         """
-        pass
-                
+        aristas = {}
+        for u in self.adyacencia:
+            for v in self.adyacencia[u]:
+                if (u,v) not in aristas and (v,u) not in aristas:
+                    aristas[(u,v)] = self.adyacencia[u][v][1]
+        lista_aristas = list(aristas.keys())
+        lista_aristas.sort(key=lambda x: aristas[x])
+        aristas_aam = []
+
+        coste = {}
+        for vertice in self.adyacencia:
+            coste[vertice] = [vertice]
+        
+        while lista_aristas != []:
+            a = lista_aristas.pop(0)
+            u, v = a[0], a[1]
+            if coste[u] != coste[v]:
+                aristas_aam.append(a)
+                coste[u] += coste[v]
+                for vertice in coste[v]:
+                    coste[vertice] = coste[u]
+        
+        return aristas_aam        
 
     #### NetworkX ####
     def convertir_a_NetworkX(self)-> nx.Graph or nx.DiGraph:
