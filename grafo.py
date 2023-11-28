@@ -251,10 +251,34 @@ class Grafo:
         Raises:
             TypeError: Si origen no es "hashable".
         Example:
-            Si G.dijksra(1)={2:1, 3:2, 4:1} entonces 1 es padre de 2 y de 4 y 2 es padre de 3.
+            Si G.dijkstra(1)={2:1, 3:2, 4:1} entonces 1 es padre de 2 y de 4 y 2 es padre de 3.
             En particular, un camino mínimo desde 1 hasta 3 sería 1->2->3.
         """
-        pass
+        if origen not in self.adyacencia:
+            return {}
+        else:
+            padre = {}
+            distancia = {}
+            visitado = {}
+            for vertice in self.adyacencia:
+                padre[vertice] = None
+                distancia[vertice] = INFTY
+                visitado[vertice] = False
+            distancia[origen] = 0
+            cola = []
+            heapq.heappush(cola, (distancia[origen], origen))
+            while len(cola) > 0:
+                dv, v = heapq.heappop(cola)
+                if not visitado[v]:
+                    visitado[v] = True
+                    ady_v = self.adyacencia[v]
+                    for x in self.adyacencia[v]:
+                        if distancia[x] > dv + ady_v[x][1]:
+                            distancia[x] = dv + ady_v[x][1]
+                            padre[x] = v
+                            heapq.heappush(cola, (distancia[x], x))
+            del padre[origen]
+            return padre
 
     def camino_minimo(self,origen:object,destino:object)->List[object]:
         """ Calcula el camino mínimo desde el vértice origen hasta el vértice
@@ -272,8 +296,18 @@ class Grafo:
         Raises:
             TypeError: Si origen o destino no son "hashable".
         """
-        pass
-
+        arbol_dijkstra = self.dijkstra(origen)
+        if arbol_dijkstra == {} or destino not in arbol_dijkstra:
+            return []
+        else:
+            camino = []
+            nodo = destino
+            while nodo != origen:
+                camino.append(nodo)
+                nodo = arbol_dijkstra[nodo]
+            camino.append(origen)
+            camino.reverse()
+            return camino
 
     def prim(self)-> Dict[object,object]:
         """ Calcula un Árbol Abarcador Mínimo para el grafo
@@ -289,8 +323,33 @@ class Grafo:
                 1 es padre de 2 y de 4
                 2 es padre de 3
         """
-        pass
-                    
+        padre = {}
+        coste_minimo = {}
+        visitado = {}
+        cola = []
+        for vertice in self.adyacencia:
+            padre[vertice] = None
+            coste_minimo[vertice] = INFTY
+            visitado[vertice] = False
+            heapq.heappush(cola, (coste_minimo[vertice], vertice))
+        
+        while len(cola) > 0:
+            _, v = heapq.heappop(cola)
+            if not visitado[v]:
+                visitado[v] = True
+                ady_v = self.adyacencia[v]
+                for x in ady_v:
+                    if not visitado[x] and coste_minimo[x] > ady_v[x][1]:
+                        coste_minimo[x] = ady_v[x][1]
+                        padre[x] = v
+                        heapq.heappush(cola, (coste_minimo[x], x))
+        
+        lista_keys = list(padre.keys())
+        for key in lista_keys:
+            if padre[key] == None:
+                del padre[key]
+
+        return padre                 
 
     def kruskal(self)-> List[Tuple[object,object]]:
         """ Calcula un Árbol Abarcador Mínimo para el grafo

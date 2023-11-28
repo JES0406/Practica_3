@@ -77,16 +77,71 @@ class Calle:
     def ordenar_cruces(self):
         cruces_ordenados = {}
 
+        def funcion_aux(x, cruce):
+            if x['Prefijo de numeración'] == "KM.":
+                pass
+            else:
+                distancias[dist(x["coordenadas"], cruce)] = x["Número"]
+
         for cruce in self.cruces:
             try:
                 distancias = {}
-                self.direcciones.apply(lambda x: self.funcion_aux(x, distancias, cruce), axis=1)
+                self.direcciones.apply(lambda x: funcion_aux(x, cruce), axis=1)
                 distancias = dict(sorted(distancias.items()))
                 distancia_min = list(distancias.keys())[0]
                 num_dist_min = distancias[distancia_min]
-                while num_dist_min in cruces_ordenados:
-                    num_dist_min += 0.0001
-                cruces_ordenados[num_dist_min] = cruce
+                
+                if num_dist_min not in cruces_ordenados:
+                    cruces_ordenados[num_dist_min] = cruce
+                
+                else:
+
+                    num_anterior = num_dist_min - 2
+                    num_siguiente = num_dist_min + 2
+                    
+                    while num_dist_min + 0.01 in cruces_ordenados:
+                        num_dist_min += 0.01
+                    
+                    if len(distancias) < 3:
+                        cruces_ordenados[num_dist_min + 0.01] = cruce
+                        continue
+
+                    error = True
+                    while error:
+                        try:
+                            coords_anterior = self.direcciones.loc[self.direcciones["Número"] == num_anterior]['coordenadas'].values[0]
+                            cruce_anterior = cruces_ordenados[num_dist_min]
+
+                            dist_cruce_actual = dist(cruce, coords_anterior)
+                            dist_cruce_anterior = dist(cruce_anterior, coords_anterior)
+                            
+                            if dist_cruce_actual < dist_cruce_anterior:
+                                cruces_ordenados[num_dist_min + 0.01] = cruce_anterior
+                                cruces_ordenados[num_dist_min] = cruce
+                            else:
+                                cruces_ordenados[num_dist_min + 0.01] = cruce
+                            error = False
+
+                        except:
+                            try:
+                                coords_siguiente = self.direcciones.loc[self.direcciones["Número"] == num_siguiente]['coordenadas'].values[0]
+                                cruce_anterior = cruces_ordenados[num_dist_min]
+
+                                dist_cruce_actual = dist(cruce, coords_siguiente)
+                                dist_cruce_siguiente = dist(cruce_anterior, coords_siguiente)
+
+                                if dist_cruce_actual < dist_cruce_siguiente:
+                                    cruces_ordenados[num_dist_min + 0.01] = cruce
+                                else:
+                                    cruces_ordenados[num_dist_min + 0.01] = cruce_anterior
+                                    cruces_ordenados[num_dist_min] = cruce
+                                error = False
+                            except:
+                                num_anterior -= 2
+                                num_siguiente += 2
+                                if num_siguiente > 600:
+                                    error = False
+                                    cruces_ordenados[num_dist_min + 0.01] = cruce
             except:
                 continue
         
@@ -118,10 +173,9 @@ def closest(coordenada, coordenadas_limpias, R):
             return (x, y)
 
 if __name__ == "__main__":
-    from time import time
-    coordenadas_limpias = filtrar_por_radios(1500) # 8000 centímetros = 80 metros, se considera que un cruce está dentro del radio de otro si está a menos de 80 metros de distancia según las observaciones
-    print(len(coordenadas_limpias))
-    print(df_cruces["coordenadas"].head())
+    # 1500 centímetros = 15 metros, se considera que un cruce está dentro del radio de otro si está a
+    # menos de 15 metros de distancia según las observaciones
+    coordenadas_limpias = filtrar_por_radios(1500)
 
     # Creamos los cruces
     cruces = {}
