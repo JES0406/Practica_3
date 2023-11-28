@@ -260,11 +260,13 @@ class Grafo:
             padre = {}
             distancia = {}
             visitado = {}
+            
             for vertice in self.adyacencia:
                 padre[vertice] = None
                 distancia[vertice] = INFTY
                 visitado[vertice] = False
             distancia[origen] = 0
+            
             cola = []
             heapq.heappush(cola, (distancia[origen], origen))
             while len(cola) > 0:
@@ -277,6 +279,7 @@ class Grafo:
                             distancia[x] = dv + ady_v[x][1]
                             padre[x] = v
                             heapq.heappush(cola, (distancia[x], x))
+            
             del padre[origen]
             return padre
 
@@ -297,8 +300,10 @@ class Grafo:
             TypeError: Si origen o destino no son "hashable".
         """
         arbol_dijkstra = self.dijkstra(origen)
+        
         if arbol_dijkstra == {} or destino not in arbol_dijkstra:
             return []
+        
         else:
             camino = []
             nodo = destino
@@ -327,6 +332,7 @@ class Grafo:
         coste_minimo = {}
         visitado = {}
         cola = []
+        
         for vertice in self.adyacencia:
             padre[vertice] = None
             coste_minimo[vertice] = INFTY
