@@ -172,6 +172,8 @@ class Grafo:
         """
         if u in self.adyacencia:
             return list(self.adyacencia[u].keys())
+        else:
+            return None
 
     #### Grados de vértices ####
     def grado_saliente(self,v:object)-> int or None:
@@ -238,7 +240,7 @@ class Grafo:
             else:
                 return len(self.adyacencia[v])
         else:
-            return 0
+            return None
 
     #### Algoritmos ####
     def dijkstra(self,origen:object)-> Dict[object,object]:
