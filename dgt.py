@@ -39,6 +39,20 @@ def cruces_as_int(df_cruces: pd.DataFrame) -> pd.DataFrame:
 def direcciones_read(path: str) -> pd.DataFrame:
     return pd.read_csv(path, encoding="iso-8859-1", delimiter=";")
 
+def clean_names_dir(df_direcc: pd.DataFrame) -> pd.DataFrame:
+    """Función que limpia los nombres de las columnas del dataframe de cruces
+
+    Args:
+        df_cruces (pd.DataFrame): DataFrame de cruces
+
+    Returns:
+        pd.DataFrame: DataFrame de cruces con los nombres de las columnas limpios
+    """
+    columnas_a_corregir = ["Clase de la via", "Nombre de la vía", "Partícula de la vía"]
+
+    for i in columnas_a_corregir:
+        df_direcc[i] = df_direcc[i].apply(lambda x: x.strip()) # Eliminamos espacios en blanco y nan
+    return df_direcc
 
 def direcciones_as_int(df_direcc: pd.DataFrame) -> pd.DataFrame:
     """Función que convierte a int las columnas que deben serlo
@@ -94,6 +108,10 @@ def literal_split(df_direc: pd.DataFrame) -> pd.DataFrame:
     literal_splitted[columnas] = literal_splitted['Literal de numeracion'].apply(lambda x: pd.Series(listas(x)))
     return literal_splitted
 
+def coordenadas_generar(df_cruces: pd.DataFrame, df_direcc: pd.DataFrame) -> pd.DataFrame:
+    df_cruces["coordenadas"] = list(zip(df_cruces["Coordenada X (Guia Urbana) cm (cruce)"], df_cruces["Coordenada Y (Guia Urbana) cm (cruce)"]))
+    df_direcc["coordenadas"] = list(zip(df_direcc["Coordenada X (Guia Urbana) cm"], df_direcc["Coordenada Y (Guia Urbana) cm"]))
+    return df_cruces, df_direcc
 
 def process_data(path_1: str, path_2: str) -> [pd.DataFrame, pd.DataFrame]:
     """Función que procesa los datos de los ficheros
@@ -106,4 +124,14 @@ def process_data(path_1: str, path_2: str) -> [pd.DataFrame, pd.DataFrame]:
         [pd.DataFrame, pd.DataFrame]: [dataframe de cruces, dataframe de direcciones]
     """
     # Apliquemos las funciones anteriores de manera secuencial
-    return [cruces_as_int(clean_names(cruces_read(path_1))), literal_split(direcciones_as_int(direcciones_read(path_2)))]
+    df_cruces = cruces_read(path_1)
+    df_cruces = clean_names(df_cruces)
+    df_cruces = cruces_as_int(df_cruces)
+
+    df_direcc = direcciones_read(path_2)
+    df_direcc = clean_names_dir(df_direcc)
+    df_direcc = direcciones_as_int(df_direcc)
+    df_direcc = literal_split(df_direcc)
+
+    df_cruces, df_direcc = coordenadas_generar(df_cruces, df_direcc)
+    return df_cruces, df_direcc

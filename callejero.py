@@ -26,7 +26,6 @@ from math import sqrt
 import numpy as np
 df_cruces, df_direcc = process_data("data/cruces.csv", "data/direcciones.csv")
 
-
 class Cruce:
 
     #Completar esta clase con los datos y métodos que se necesite asociar a cada cruce
@@ -63,18 +62,18 @@ class Calle:
         self.cruces = self.get_data(df_cruces, df_direcc)[0]
 
     def get_data(self, cruces: pd.DataFrame, direcciones: pd.DataFrame)-> tuple:
-        return (cruces[cruces["Codigo de vía tratado"] == self.ID].coordenadas.unique(), direcciones[direcciones["Codigo de via"] == self.ID])
+        return (cruces[cruces["Codigo de vía tratado"] == self.ID]["coordenadas"].unique(), direcciones[direcciones["Codigo de via"] == self.ID])
 
     def get_velocidad(self):
         if self.direcciones.empty or self.direcciones["Clase de la via"].iloc[0] not in VELOCIDADES_CALLES:
             return VELOCIDAD_CALLES_ESTANDAR
         else:
             return VELOCIDADES_CALLES[self.direcciones["Clase de la via"].iloc[0]]
-        
-    def funcion_aux(self, x, distancias, cruce):
-        distancias[dist(x["coordenadas"], cruce)] = x["Número"]
 
     def ordenar_cruces(self):
+        if len(self.direcciones.loc[self.direcciones["Prefijo de numeración"] != "KM."]) != 0:
+            return
+        
         cruces_ordenados = {}
 
         def funcion_aux(x, cruce):
@@ -88,24 +87,26 @@ class Calle:
                 distancias = {}
                 self.direcciones.apply(lambda x: funcion_aux(x, cruce), axis=1)
                 distancias = dict(sorted(distancias.items()))
-                distancia_min = list(distancias.keys())[0]
+                
+                distancias_lista = list(distancias.keys())
+                distancia_min = distancias_lista[0]
                 num_dist_min = distancias[distancia_min]
                 
+                while num_dist_min % 2 == 0:
+                    distancias_lista.pop(0)
+                    distancia_min = distancias_lista[0]
+                    num_dist_min = distancias[distancia_min]
+
                 if num_dist_min not in cruces_ordenados:
                     cruces_ordenados[num_dist_min] = cruce
                 
                 else:
-
                     num_anterior = num_dist_min - 2
                     num_siguiente = num_dist_min + 2
                     
                     while num_dist_min + 0.01 in cruces_ordenados:
                         num_dist_min += 0.01
                     
-                    if len(distancias) < 3:
-                        cruces_ordenados[num_dist_min + 0.01] = cruce
-                        continue
-
                     error = True
                     while error:
                         try:
@@ -137,11 +138,7 @@ class Calle:
                                     cruces_ordenados[num_dist_min] = cruce
                                 error = False
                             except:
-                                num_anterior -= 2
                                 num_siguiente += 2
-                                if num_siguiente > 600:
-                                    error = False
-                                    cruces_ordenados[num_dist_min + 0.01] = cruce
             except:
                 continue
         
@@ -150,7 +147,6 @@ class Calle:
         self.cruces = cruces_ordenados
 
 def filtrar_por_radios(R: int):
-    df_cruces["coordenadas"] = list(zip(df_cruces["Coordenada X (Guia Urbana) cm (cruce)"], df_cruces["Coordenada Y (Guia Urbana) cm (cruce)"]))
     coordenadas_a_tratar = sorted(df_cruces["coordenadas"].unique())
     coordenadas_limpias = []
     for coordenada in coordenadas_a_tratar:
@@ -172,48 +168,49 @@ def closest(coordenada, coordenadas_limpias, R):
         if (coor_x - R <= x <= coor_x + R) and (coor_y - R <= y <= coor_y + R):
             return (x, y)
 
-if __name__ == "__main__":
-    # 1500 centímetros = 15 metros, se considera que un cruce está dentro del radio de otro si está a
-    # menos de 15 metros de distancia según las observaciones
-    coordenadas_limpias = filtrar_por_radios(1500)
+# if __name__ == "__main__":
+#     # 1500 centímetros = 15 metros, se considera que un cruce está dentro del radio de otro si está a
+#     # menos de 15 metros de distancia según las observaciones
+#     coordenadas_limpias = filtrar_por_radios(1500)
 
-    # Creamos los cruces
-    cruces = {}
-    for coordenada in coordenadas_limpias:
-        cruces[coordenada] = Cruce(coordenada[0], coordenada[1])
-    list_cruces:list[Cruce] = list(cruces.values())
+#     # Creamos los cruces
+#     cruces = {}
+#     for coordenada in coordenadas_limpias:
+#         cruces[coordenada] = Cruce(coordenada[0], coordenada[1])
+#     list_cruces:list[Cruce] = list(cruces.values())
 
-    # Creamos las calles
-    calles = []
-    for cruce in list_cruces: # Escogemos los cruces
-        for calle in cruce.calles: # Escogemos las calles de cada cruce
-            if calle not in calles: # Si la calle no está en la lista de calles, la añadimos
-                calles.append(calle)  
-    calles = [Calle(calle) for calle in calles] # Creamos los objetos calle
+#     # Creamos las calles
+#     calles = []
+#     for cruce in list_cruces: # Escogemos los cruces
+#         for calle in cruce.calles: # Escogemos las calles de cada cruce
+#             if calle not in calles: # Si la calle no está en la lista de calles, la añadimos
+#                 calles.append(calle)  
+#     calles = [Calle(calle) for calle in calles] # Creamos los objetos calle
 
-    # Creamos el grafo  
-    grafo = Grafo(False)
+#     # Creamos el grafo  
+#     grafo = Grafo(False)
 
-    # Añadir vértices al grafo
-    for cruce in list_cruces:
-        grafo.agregar_vertice(cruce)
+#     # Añadir vértices al grafo
+#     for cruce in list_cruces:
+#         grafo.agregar_vertice(cruce)
     
-    # Para las aristas, se añaden las calles que conectan dos cruces como aristas del grafo
-    for calle in calles:
-        cruces_calle = calle.cruces
-        for i in range(len(cruces_calle)):
-            if i != len(cruces_calle) - 1:
-                grafo.agregar_arista(cruces[cruces_calle[i]], cruces[cruces_calle[i+1]], None, calle.get_velocidad())
+#     # Para las aristas, se añaden las calles que conectan dos cruces como aristas del grafo
+#     for calle in calles:
+#         calle.ordenar_cruces()
+#         cruces_calle = calle.cruces
+#         for i in range(len(cruces_calle)):
+#             if i != len(cruces_calle) - 1:
+#                 grafo.agregar_arista(cruces[cruces_calle[i]], cruces[cruces_calle[i+1]], None, calle.get_velocidad())
 
-    # Pasemoslo a networkx
-    import networkx as nx
-    import matplotlib.pyplot as plt
-    G = grafo.convertir_a_NetworkX()
+#     # Pasemoslo a networkx
+#     import networkx as nx
+#     import matplotlib.pyplot as plt
+#     G = grafo.convertir_a_NetworkX()
 
-    pos = {}
-    for cruce in list_cruces:
-        pos[cruce] = (cruce.coord_x, cruce.coord_y)
+#     pos = {}
+#     for cruce in list_cruces:
+#         pos[cruce] = (cruce.coord_x, cruce.coord_y)
 
-    nx.draw_networkx_nodes(G, pos=pos, node_size=1)
-    nx.draw_networkx_edges(G, pos=pos, width=0.5, edge_color="black")
-    plt.show()
+#     nx.draw_networkx_nodes(G, pos=pos, node_size=1)
+#     nx.draw_networkx_edges(G, pos=pos, width=0.5, edge_color="black")
+#     plt.show()
