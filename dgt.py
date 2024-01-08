@@ -40,7 +40,7 @@ def direcciones_read(path: str) -> pd.DataFrame:
     return pd.read_csv(path, encoding="iso-8859-1", delimiter=";")
 
 def clean_names_dir(df_direcc: pd.DataFrame) -> pd.DataFrame:
-    """Función que limpia los nombres de las columnas del dataframe de cruces
+    """Función que limpia los nombres de las columnas del DataFrame de direcciones
 
     Args:
         df_cruces (pd.DataFrame): DataFrame de cruces
@@ -48,10 +48,11 @@ def clean_names_dir(df_direcc: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame de cruces con los nombres de las columnas limpios
     """
+
     columnas_a_corregir = ["Clase de la via", "Nombre de la vía", "Partícula de la vía"]
 
     for i in columnas_a_corregir:
-        df_direcc[i] = df_direcc[i].apply(lambda x: x.strip()) # Eliminamos espacios en blanco y nan
+        df_direcc[i] = df_direcc[i].apply(lambda x: x.strip()) # Eliminamos espacios en blanco
     return df_direcc
 
 def direcciones_as_int(df_direcc: pd.DataFrame) -> pd.DataFrame:
@@ -86,7 +87,15 @@ def direcciones_as_int(df_direcc: pd.DataFrame) -> pd.DataFrame:
     return direcciones_enteros
 
 def literal_split(df_direc: pd.DataFrame) -> pd.DataFrame:
+    """Función que toma la columna 'Literal de numeracion' del DataFrame de direcciones y crea otras
+    tres columnas, diviendo el literal en prefijo de numeración, número y sufijo de numeración
+
+    Args:
+        direcciones (pd.DataFrame): DataFrame de direcciones
     
+    Returns:
+        literal_splitted (pd.DataFrame): DataFrame de direcciones con las nuevas columnas
+    """
     # Expresión regular para dividir el literal de numeración en prefijo, número y sufijo
     literal_splitter = re.compile(r"([A-Z]+\.?)([0-9]+)\s*([A-Z]*)")
 
@@ -109,6 +118,16 @@ def literal_split(df_direc: pd.DataFrame) -> pd.DataFrame:
     return literal_splitted
 
 def coordenadas_generar(df_cruces: pd.DataFrame, df_direcc: pd.DataFrame) -> pd.DataFrame:
+    """Función que genera una columna de coordenadas en cada dataframe, para hacerlas más manejables
+
+    Args:
+        df_cruces (pd.DataFrame): dataframe de cruces
+        df_direcc (pd.DataFrame): dataframe de direcciones
+
+    Returns:
+        pd.DataFrame: dataframe de cruces y dataframe de direcciones con una columna de coordenadas añadida
+    """
+
     df_cruces["coordenadas"] = list(zip(df_cruces["Coordenada X (Guia Urbana) cm (cruce)"], df_cruces["Coordenada Y (Guia Urbana) cm (cruce)"]))
     df_direcc["coordenadas"] = list(zip(df_direcc["Coordenada X (Guia Urbana) cm"], df_direcc["Coordenada Y (Guia Urbana) cm"]))
     return df_cruces, df_direcc
